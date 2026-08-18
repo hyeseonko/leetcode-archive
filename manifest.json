@@ -3,7 +3,11 @@
   "name": "LeetCode Archive",
   "version": "0.1.0",
   "description": "Archive accepted LeetCode submissions to GitHub the moment they pass",
-  "permissions": ["storage", "cookies", "alarms"],
+  "permissions": [
+    "storage",
+    "cookies",
+    "alarms"
+  ],
   "host_permissions": [
     "https://leetcode.com/*",
     "https://api.github.com/*",
@@ -15,17 +19,34 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://leetcode.com/*"],
+      "matches": [
+        "https://leetcode.com/*"
+      ],
       "world": "MAIN",
       "run_at": "document_start",
-      "js": ["src/lib/verdict.js", "src/content/detector.js"]
+      "js": [
+        "src/lib/verdict.js",
+        "src/content/detector.js"
+      ]
     },
     {
-      "matches": ["https://leetcode.com/*"],
+      "matches": [
+        "https://leetcode.com/*"
+      ],
       "world": "ISOLATED",
       "run_at": "document_start",
-      "js": ["src/content/bridge.js"]
+      "js": [
+        "src/content/bridge.js",
+        "src/content/note-panel.js"
+      ],
+      "css": [
+        "src/content/note-panel.css"
+      ]
     }
   ],
-  "action": { "default_title": "LeetCode Archive" }
+  "action": {
+    "default_title": "LeetCode Archive",
+    "default_popup": "src/popup/popup.html"
+  },
+  "options_page": "src/options/options.html"
 }

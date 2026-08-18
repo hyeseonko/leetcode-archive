@@ -1,0 +1,5 @@
+body { font: 13px/1.5 system-ui, sans-serif; margin: 0; padding: 14px; width: 260px; }
+h1 { font-size: 14px; margin: 0 0 8px; }
+output { display: block; font: 20px/1.2 ui-monospace, monospace; letter-spacing: 2px; margin: 6px 0; }
+button { width: 100%; padding: 6px; margin: 8px 0; }
+a { font-size: 12px; }
