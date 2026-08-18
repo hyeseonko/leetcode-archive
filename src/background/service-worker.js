@@ -35,7 +35,9 @@ async function rememberFailure(job, now) {
   }
 }
 
-async function run(job) {
+// `tabId` is the LeetCode tab that reported the submission, when there is one. The
+// sweep has no tab, so it archives without offering the note panel.
+async function run(job, tabId) {
   const token = await store.get('token');
   if (!token) {
     await setBadge('!', '#d29922');
@@ -56,10 +58,12 @@ async function run(job) {
     await setBadge('');
     await settle(store, { submissionId: job.verdict.submissionId }, 'ok', Date.now());
 
-    if (result.status === 'committed') {
-      // questionId travels with the broadcast so a note commit can find the directory.
+    if (result.status === 'committed' && tabId) {
+      // A content script is not reachable through runtime.sendMessage; it has to be
+      // addressed by tab. questionId rides along so a note commit can find the
+      // directory without re-resolving it.
       const enriched = { ...job, questionId: result.questionId };
-      chrome.runtime.sendMessage({ type: 'lca:committed', job: enriched, result }).catch(() => {});
+      chrome.tabs.sendMessage(tabId, { type: 'lca:committed', job: enriched, result }).catch(() => {});
     }
     return result;
   } catch (error) {
@@ -122,9 +126,10 @@ async function saveNote({ job, note }) {
   return { status: 'committed' };
 }
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'lca:accepted') {
-    run({ verdict: message.verdict, titleSlug: message.titleSlug, title: message.title }).then(sendResponse);
+    run({ verdict: message.verdict, titleSlug: message.titleSlug, title: message.title }, sender.tab?.id)
+      .then(sendResponse);
     return true; // keep the channel open for the async reply
   }
   if (message?.type === 'lca:status') {
