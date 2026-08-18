@@ -1,0 +1,12 @@
+{
+  "name": "leetcode-archive",
+  "version": "0.1.0",
+  "description": "Archive accepted LeetCode submissions to GitHub the moment they pass",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}

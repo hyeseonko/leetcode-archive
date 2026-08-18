@@ -54,7 +54,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test test/"
+    "test": "node --test"
   },
   "license": "MIT",
   "engines": { "node": ">=18" }
