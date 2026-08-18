@@ -42,3 +42,13 @@ exist will break the core read path for everyone. Bring evidence.
 
 Imperative subject under 72 characters. Explain why in the body when the why is not
 obvious from the diff.
+
+## Icons
+
+`icons/icon-512.png` is the master. The four sizes Chrome loads are derived from it:
+
+```bash
+for s in 16 32 48 128; do sips -Z $s icons/icon-512.png --out icons/icon-$s.png; done
+```
+
+Regenerate all of them together so they never drift apart.
