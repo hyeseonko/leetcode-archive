@@ -1,0 +1,7 @@
+body { font: 14px/1.6 system-ui, sans-serif; margin: 0; padding: 24px; max-width: 420px; }
+h1 { font-size: 16px; }
+label { display: block; margin: 10px 0; }
+input { display: block; width: 100%; box-sizing: border-box; padding: 6px; }
+.row { display: flex; gap: 8px; margin-top: 16px; }
+button { flex: 1; padding: 7px; }
+#msg { color: #444; min-height: 1.6em; }
