@@ -26,14 +26,21 @@ without taking the DOM's fragility.
 
 | Component | World | Responsibility |
 |---|---|---|
-| `src/content/detector.js` | MAIN | Wraps `fetch` and `XMLHttpRequest`, recognises a submission verdict in any response body, posts the submission id to the isolated world |
-| `src/content/collector.js` | ISOLATED | Calls the LeetCode GraphQL API for code, stats and problem statement; forwards a complete record to the background |
+| `src/content/detector.js` | MAIN | Wraps `fetch` and `XMLHttpRequest`, recognises a submission verdict in any response body, posts the verdict to the isolated world |
+| `src/content/bridge.js` | ISOLATED | The only seam between the page's world and `chrome.runtime`; forwards the verdict and the problem slug, nothing else |
 | `src/content/note-panel.js` | ISOLATED | Renders the note box after a successful commit |
 | `src/background/service-worker.js` | — | Message router, dedupe, retry queue, badge state |
+| `src/background/archive.js` | — | The pipeline: read the submission, render the files, commit them, record it |
 | `src/background/github.js` | — | Git Data API — blobs, tree, commit, ref |
 | `src/background/oauth.js` | — | OAuth device flow, token storage |
 | `src/background/poller.js` | — | Safety-net sweep of recent submissions |
-| `src/lib/*` | — | Pure functions: language map, path builder, markdown renderer, response parser |
+| `src/lib/*` | — | Pure functions: language map, path builder, renderer, verdict matcher, LeetCode queries |
+
+Reading LeetCode happens in the background, not in a content script. The hook and the
+poller then share one implementation of the queries instead of keeping two in step.
+The background can do this because `host_permissions` covers `leetcode.com`, so a
+`credentials: 'include'` fetch carries the session; the `csrftoken` header comes from
+`chrome.cookies`.
 
 Everything with logic worth trusting lives in `src/lib/` and is tested with
 `node --test`. The Chrome and network surfaces are thin enough to read.
@@ -47,16 +54,16 @@ LeetCode page
 detector.js (MAIN)         recognises { status_msg: "Accepted", submission_id }
   │ window.postMessage
   ▼
-collector.js (ISOLATED)    GraphQL: submissionDetails + question.content
+bridge.js (ISOLATED)       adds the problem slug from the URL
   │ chrome.runtime.sendMessage
   ▼
-service-worker.js          seen before? → drop.  otherwise → github.js
+archive.js (worker)        seen before? → drop.
+  │                        else GraphQL: submissionDetails + question.content
+  ▼
+github.js                  2 blobs → 1 tree → 1 commit → 1 ref update
   │
   ▼
-github.js                  3 blobs → 1 tree → 1 commit → 1 ref update
-  │
-  ▼
-note-panel.js              "saved. add a note?" → second commit if they do
+note-panel.js              "archived. add a note?" → second commit if they do
 ```
 
 ### Detection is shape-based, not URL-based
@@ -83,9 +90,9 @@ submission caught twice is committed once.
 ## Data collection
 
 Three GraphQL queries against `https://leetcode.com/graphql/`, issued from the
-content script so the browser attaches the session cookie automatically. The only
-header the extension sets by hand is `x-csrftoken`, read from the non-httpOnly
-`csrftoken` cookie.
+background worker with `credentials: 'include'` so the browser attaches the session
+cookie. The only header the extension sets by hand is `x-csrftoken`, read through
+`chrome.cookies` from the non-httpOnly `csrftoken` cookie.
 
 Every field below is one that `joshcai/leetcode-sync@v1.7` queries in production.
 The schema is not published and rejects a query wholesale if it names a field that
