@@ -1,0 +1,13 @@
+#lca-note {
+  position: fixed; right: 16px; bottom: 16px; z-index: 2147483647;
+  width: 300px; padding: 12px; border-radius: 8px;
+  background: #1e1e1e; color: #eee; box-shadow: 0 4px 20px rgba(0,0,0,.4);
+  font: 13px/1.4 system-ui, sans-serif;
+}
+#lca-note p { margin: 0 0 8px; }
+#lca-note textarea {
+  width: 100%; box-sizing: border-box; background: #2b2b2b; color: inherit;
+  border: 1px solid #444; border-radius: 4px; font: inherit; padding: 6px;
+}
+#lca-note div { display: flex; gap: 6px; margin-top: 8px; }
+#lca-note button { flex: 1; padding: 5px; }
